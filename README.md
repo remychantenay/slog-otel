@@ -1,6 +1,6 @@
 # slog-otel
 [![Go Report Card](https://goreportcard.com/badge/github.com/remychantenay/slog-otel)](https://goreportcard.com/report/github.com/remychantenay/slog-otel)
-[![codebeat badge](https://codebeat.co/badges/60d273d3-08e6-4f48-9c35-86ab75fc1924)](https://codebeat.co/projects/github-com-remychantenay-slog-otel-main)
+[![codebeat badge](https://codebeat.co/badges/33ebce8f-9681-4c9c-8c43-f9ab4f197d9e)](https://codebeat.co/projects/github-com-remychantenay-slog-otel-main)
 [![GoDoc](https://godoc.org/github.com/remychantenay/slog-otel?status.svg)](https://godoc.org/github.com/remychantenay/slog-otel)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
