@@ -1,0 +1,49 @@
+# CDP pipeline
+version: "2017-09-20"
+pipeline:
+- id: check-version
+  type: script
+  vm_config:
+      type: linux
+  commands:
+  - desc: Checks the semver version of the project.
+    cmd: |
+      git clone --quiet --depth 1 https://github.bus.zalan.do/spaceballs/tools.git /sb-tools
+      /sb-tools/bin/check-semver
+
+- id: test
+  type: script
+  vm_config:
+    type: linux
+    image: cdp-runtime/go
+  commands:
+  - desc: Installs dependencies.
+    cmd: |
+      go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
+      go install golang.org/x/vuln/cmd/govulncheck@latest
+  - desc: Runs the linter.
+    cmd: |
+      make lint
+  - desc: Runs govulncheck.
+    cmd: |
+      govulncheck ./...
+  - desc: Runs the tests.
+    cmd: |
+      make test
+
+- id: release
+  type: script
+  vm_config:
+      type: linux
+  commands:
+  - desc: Creates a release in GHE for the current version.
+    cmd: |
+      TAG=v$(cat VERSION)
+      if git tag --list | egrep -q "^$TAG$"
+      then
+          TAG=$TAG-$CDP_BUILD_VERSION
+      fi
+      git gh-tag $TAG
+  when:
+    branch: main
+    event: push
