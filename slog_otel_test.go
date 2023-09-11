@@ -8,13 +8,14 @@ import (
 	"strings"
 	"testing"
 
-	slogotel "github.com/remychantenay/slog-otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
 	"go.opentelemetry.io/otel/codes"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
+
+	slogotel "github.com/remychantenay/slog-otel"
 )
 
 func TestOtelHandler(t *testing.T) {

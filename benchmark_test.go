@@ -7,11 +7,12 @@ import (
 	"testing"
 	"time"
 
-	slogotel "github.com/remychantenay/slog-otel"
 	"go.opentelemetry.io/otel/baggage"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
+
+	slogotel "github.com/remychantenay/slog-otel"
 )
 
 var (
