@@ -121,3 +121,6 @@ and the related span will look like:
  	...
  }
 ```
+
+## License
+Apache License Version 2.0
