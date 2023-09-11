@@ -4,7 +4,7 @@
 [![GoDoc](https://godoc.org/github.com/remychantenay/slog-otel?status.svg)](https://godoc.org/github.com/remychantenay/slog-otel)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Go package that provides a custom handler for `log/slog` to ensures strong correlation between log records and Open-Telemetry spans by...
+Go package that provides an implementation of `log/slog` [Handler interface](https://pkg.go.dev/log/slog#Handler) to ensure a strong correlation between log records and [Open-Telemetry spans](https://opentelemetry.io/docs/concepts/signals/traces/#spans) by...
 
 1. Adding span and trace IDs to the log record.
 2. Adding context baggage members to the log record.
