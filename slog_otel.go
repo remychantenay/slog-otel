@@ -114,7 +114,7 @@ func (h OtelHandler) WithGroup(name string) slog.Handler {
 }
 
 // Enabled reports whether the logger emits log records at the given context and level.
-// Note: We handover the decision down to the next middleware.
+// Note: We handover the decision down to the next handler.
 func (h OtelHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.Next.Enabled(ctx, level)
 }
