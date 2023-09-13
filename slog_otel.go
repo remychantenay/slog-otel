@@ -45,6 +45,12 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 		return h.Next.Handle(ctx, record)
 	}
 
+	// Adding context baggage members to log record.
+	b := baggage.FromContext(ctx)
+	for _, m := range b.Members() {
+		record.AddAttrs(slog.String(m.Key(), m.Value()))
+	}
+
 	span := trace.SpanFromContext(ctx)
 	if span == nil || !span.IsRecording() {
 		return h.Next.Handle(ctx, record)
@@ -65,35 +71,24 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 		return true
 	})
 
-	// Setting span status if the log is an error.
-	// Purposely leaving as Unset (default) otherwise.
-	if record.Level >= slog.LevelError {
-		span.SetStatus(codes.Error, record.Message)
-	}
-
 	span.AddEvent("log_record", trace.WithAttributes(eventAttrs...))
 
 	// Adding span info to log record.
 	spanContext := span.SpanContext()
-	logAttrs := make([]slog.Attr, 0)
 	if spanContext.HasTraceID() {
 		traceID := spanContext.TraceID().String()
-		logAttrs = append(logAttrs, slog.String("trace_id", traceID))
+		record.AddAttrs(slog.String("trace_id", traceID))
 	}
 
 	if spanContext.HasSpanID() {
 		spanID := spanContext.SpanID().String()
-		logAttrs = append(logAttrs, slog.String("span_id", spanID))
+		record.AddAttrs(slog.String("span_id", spanID))
 	}
 
-	// Adding context baggage attribute to log record.
-	b := baggage.FromContext(ctx)
-	for _, m := range b.Members() {
-		logAttrs = append(logAttrs, slog.String(m.Key(), m.Value()))
-	}
-
-	if len(logAttrs) > 0 {
-		record.AddAttrs(logAttrs...)
+	// Setting span status if the log is an error.
+	// Purposely leaving as Unset (default) otherwise.
+	if record.Level >= slog.LevelError {
+		span.SetStatus(codes.Error, record.Message)
 	}
 
 	return h.Next.Handle(ctx, record)
