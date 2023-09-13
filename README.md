@@ -15,18 +15,18 @@ Go package that provides an implementation of `log/slog`'s [Handler interface](h
 ## Usage
 ```go
 import (
-	"context"
-	"log/slog"
+    "context"
+    "log/slog"
 
-	"go.opentelemetry.io/otel/baggage"
-	"go.opentelemetry.io/otel/trace"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	slogotel "github.com/remychantenay/slog-otel"
+    "go.opentelemetry.io/otel/baggage"
+    "go.opentelemetry.io/otel/trace"
+    sdktrace "go.opentelemetry.io/otel/sdk/trace"
+    slogotel "github.com/remychantenay/slog-otel"
 )
 
 // 1. Configure slog.
 slog.SetDefault(slog.New(slogotel.OtelHandler{
-	Next: slog.NewJSONHandler(os.Stdout, nil),
+    Next: slog.NewJSONHandler(os.Stdout, nil),
 }))
 
 // 2. Set up your logger.
@@ -51,23 +51,23 @@ logger.InfoContext(ctx, "Hello world!", "locale", "en_US")
 The following initial log:
 ```json
 {
-	"time": "2023-09-11T08:28:02.77215605Z",
-	"level": "INFO",
-	"component": "server",
-	"msg": "Hello world!",
-	"locale": "en_US"
+    "time": "2023-09-11T08:28:02.77215605Z",
+    "level": "INFO",
+    "component": "server",
+    "msg": "Hello world!",
+    "locale": "en_US"
 }
 ```
 ... will be written as:
 ```json
 {
-	"time": "2023-09-11T08:28:02.77215605Z",
-	"level": "INFO",
-	"component": "server",
-	"msg": "Hello world!",
-	"locale": "en_US",
-	"trace_id": "a9938fd7a6313e0f27f3fc87f574bff6",
-	"span_id": "ed58f84d8971bf60"
+    "time": "2023-09-11T08:28:02.77215605Z",
+    "level": "INFO",
+    "component": "server",
+    "msg": "Hello world!",
+    "locale": "en_US",
+    "trace_id": "a9938fd7a6313e0f27f3fc87f574bff6",
+    "span_id": "ed58f84d8971bf60"
 }
 ```
 
