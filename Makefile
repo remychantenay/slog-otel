@@ -1,15 +1,12 @@
-PACKAGES       := $(shell find . -name "*.go" | grep -v -e vendor -e bindata | xargs -n1 dirname | sort -u)
-TEST_FLAGS     := -race -count=1
-
 default: test
 
 .PHONY: lint
 lint:
-	golangci-lint run $(PACKAGES)
+	golangci-lint run ./...
 
 .PHONY: test
 test:
-	go test $(TEST_FLAGS) $(PACKAGES)
+	go test -race -count=1 ./...
 
 .PHONY: bench
 bench:
