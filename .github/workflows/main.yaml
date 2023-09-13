@@ -1,4 +1,4 @@
-name: Go
+name: Main CI
 
 on:
   push:
@@ -32,3 +32,8 @@ jobs:
 
     - name: Testing
       run: make test
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+        env:
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
