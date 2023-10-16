@@ -1,29 +1,5 @@
-issues:
-  exclude-use-default: false
-
 linters:
-  disable-all: true
-  enable:
-  - bodyclose
-  - goconst
-  - godot
-  - godox
-  - gofmt
-  - goimports
-  - revive
-  - gosec
-  - gosimple
-  - govet
-  - ineffassign
-  - misspell
-  - prealloc
-  - staticcheck
-  - stylecheck
-  - typecheck
-  - unconvert
-  - unparam
-  - unused
-  - whitespace
+  disable-all: false
 
 linters-settings:
   goimports:
