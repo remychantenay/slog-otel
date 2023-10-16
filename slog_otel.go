@@ -14,7 +14,7 @@ import (
 )
 
 // OtelHandler is an implementation of slog's Handler interface.
-// Its role is to ensure correlation between logs and spans
+// Its role is to ensure correlation between logs and OTel spans
 // by:
 //
 // 1. Adding otel span and trace IDs to the log record.
@@ -86,7 +86,7 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 	}
 
 	// Setting span status if the log is an error.
-	// Purposely leaving as Unset (default) otherwise.
+	// Purposely leaving as codes.Unset (default) otherwise.
 	if record.Level >= slog.LevelError {
 		span.SetStatus(codes.Error, record.Message)
 	}
