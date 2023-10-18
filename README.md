@@ -7,7 +7,7 @@
 Go package that provides an implementation of `log/slog`'s [Handler interface](https://pkg.go.dev/log/slog#Handler) that ensures a strong correlation between log records and [Open-Telemetry spans](https://opentelemetry.io/docs/concepts/signals/traces/#spans) by...
 
 1. Adding [span and trace IDs](https://opentelemetry.io/docs/concepts/signals/traces/#span-context) to the log record.
-2. Adding context [baggage](https://opentelemetry.io/docs/concepts/signals/baggage/) members to the log record.
+2. Adding context [baggage](https://opentelemetry.io/docs/concepts/signals/baggage/) members to the log record (can be disabled).
 3. Adding log record as [span event](https://opentelemetry.io/docs/concepts/signals/traces/#span-events).
 4. Adding log record attributes to the span event.
 5. Setting [span status](https://opentelemetry.io/docs/concepts/signals/traces/#span-status) based on slog record level (only if >= slog.LevelError).

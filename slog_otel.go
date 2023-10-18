@@ -3,9 +3,8 @@ package slogotel
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"log/slog"
+	"time"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
@@ -25,6 +24,8 @@ import (
 type OtelHandler struct {
 	// Next represents the next handler in the chain.
 	Next slog.Handler
+	// NoBaggage determines whether to add context baggage members to the log record.
+	NoBaggage bool
 }
 
 // HandlerFn defines the handler used by slog.Handler as return value.
@@ -45,10 +46,12 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 		return h.Next.Handle(ctx, record)
 	}
 
-	// Adding context baggage members to log record.
-	b := baggage.FromContext(ctx)
-	for _, m := range b.Members() {
-		record.AddAttrs(slog.String(m.Key(), m.Value()))
+	if !h.NoBaggage {
+		// Adding context baggage members to log record.
+		b := baggage.FromContext(ctx)
+		for _, m := range b.Members() {
+			record.AddAttrs(slog.String(m.Key(), m.Value()))
+		}
 	}
 
 	span := trace.SpanFromContext(ctx)
