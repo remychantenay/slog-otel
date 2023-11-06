@@ -155,6 +155,21 @@ func (h OtelHandler) slogAttrToOtelAttr(attr slog.Attr, groupKeys ...string) att
 		for _, groupAttr := range groupAttrs {
 			return h.slogAttrToOtelAttr(groupAttr, append(groupKeys, key)...)
 		}
+	case slog.KindAny:
+		switch v := attr.Value.Any().(type) {
+		case []string:
+			return attribute.StringSlice(key, v)
+		case []int:
+			return attribute.IntSlice(key, v)
+		case []int64:
+			return attribute.Int64Slice(key, v)
+		case []float64:
+			return attribute.Float64Slice(key, v)
+		case []bool:
+			return attribute.BoolSlice(key, v)
+		default:
+			return attribute.KeyValue{}
+		}
 	default:
 		return attribute.KeyValue{}
 	}

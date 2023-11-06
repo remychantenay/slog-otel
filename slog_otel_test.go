@@ -108,6 +108,22 @@ func TestOtelHandler(t *testing.T) {
 			Key:   "level",
 			Value: attribute.StringValue("INFO"),
 		}, {
+			Key:   "string_slice",
+			Value: attribute.StringSliceValue([]string{"value_1", "value_2"}),
+		}, {
+			Key:   "int_slice",
+			Value: attribute.IntSliceValue([]int{1, 2}),
+		}, {
+			Key:   "int64_slice",
+			Value: attribute.Int64SliceValue([]int64{1, 2}),
+		}, {
+			Key:   "float64_slice",
+			Value: attribute.Float64SliceValue([]float64{1.0, 2.0}),
+		}, {
+			Key:   "bool_slice",
+			Value: attribute.BoolSliceValue([]bool{true, false}),
+		}, {
+
 			Key:   "group_1.key_1",
 			Value: attribute.StringValue("value_1"),
 		}, {
@@ -122,7 +138,24 @@ func TestOtelHandler(t *testing.T) {
 
 			group1 := slog.Group("group_1", "key_1", "value_1")
 			group2 := slog.Group("group_2", "key_2", "value_2")
-			slog.InfoContext(ctx, "adds event to span", "a_key", "a_value", group1, group2)
+
+			stringSlice := []string{"value_1", "value_2"}
+			intSlice := []int{1, 2}
+			int64Slice := []int64{1, 2}
+			float64Slice := []float64{1.0, 2.0}
+			boolSlice := []bool{true, false}
+
+			slog.InfoContext(ctx,
+				"adds event to span",
+				"string_slice", stringSlice,
+				"int_slice", intSlice,
+				"int64_slice", int64Slice,
+				"float64_slice", float64Slice,
+				"bool_slice", boolSlice,
+				"a_key", "a_value",
+				group1,
+				group2,
+			)
 		}()
 
 		spans := spanRecorder.Ended()
