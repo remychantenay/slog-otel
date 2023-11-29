@@ -12,6 +12,18 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+const (
+	// TraceIDKey is the key used by the Otel handler
+	// to inject the trace ID in the log record.
+	TraceIDKey = "trace_id"
+	// SpanIDKey is the key used by the Otel handler
+	// to inject the span ID in the log record.
+	SpanIDKey = "span_id"
+	// SpanEventKey is the key used by the Otel handler
+	// to inject the log record in the recording span, as a span event.
+	SpanEventKey = "log_record"
+)
+
 // OtelHandler is an implementation of slog's Handler interface.
 // Its role is to ensure correlation between logs and OTel spans
 // by:
@@ -60,10 +72,10 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 	}
 
 	// Adding log info to span event.
-	eventAttrs := make([]attribute.KeyValue, 0)
-	eventAttrs = append(eventAttrs, attribute.String("msg", record.Message))
-	eventAttrs = append(eventAttrs, attribute.String("level", record.Level.String()))
-	eventAttrs = append(eventAttrs, attribute.String("time", record.Time.Format(time.RFC3339Nano)))
+	eventAttrs := make([]attribute.KeyValue, 0, record.NumAttrs())
+	eventAttrs = append(eventAttrs, attribute.String(slog.MessageKey, record.Message))
+	eventAttrs = append(eventAttrs, attribute.String(slog.LevelKey, record.Level.String()))
+	eventAttrs = append(eventAttrs, attribute.String(slog.TimeKey, record.Time.Format(time.RFC3339Nano)))
 
 	record.Attrs(func(attr slog.Attr) bool {
 		otelAttr := h.slogAttrToOtelAttr(attr)
@@ -74,18 +86,18 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 		return true
 	})
 
-	span.AddEvent("log_record", trace.WithAttributes(eventAttrs...))
+	span.AddEvent(SpanEventKey, trace.WithAttributes(eventAttrs...))
 
 	// Adding span info to log record.
 	spanContext := span.SpanContext()
 	if spanContext.HasTraceID() {
 		traceID := spanContext.TraceID().String()
-		record.AddAttrs(slog.String("trace_id", traceID))
+		record.AddAttrs(slog.String(TraceIDKey, traceID))
 	}
 
 	if spanContext.HasSpanID() {
 		spanID := spanContext.SpanID().String()
-		record.AddAttrs(slog.String("span_id", spanID))
+		record.AddAttrs(slog.String(SpanIDKey, spanID))
 	}
 
 	// Setting span status if the log is an error.
