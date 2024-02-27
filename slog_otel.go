@@ -113,6 +113,7 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 func (h OtelHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return OtelHandler{
 		Next: h.Next.WithAttrs(attrs),
+		NoBaggage: h.NoBaggage,
 	}
 }
 
@@ -120,6 +121,7 @@ func (h OtelHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 func (h OtelHandler) WithGroup(name string) slog.Handler {
 	return OtelHandler{
 		Next: h.Next.WithGroup(name),
+		NoBaggage: h.NoBaggage,
 	}
 }
 
