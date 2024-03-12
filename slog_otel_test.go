@@ -29,11 +29,9 @@ func TestOtelHandler(t *testing.T) {
 		return spanRecorder, tracer
 	}
 
-	setupLogger := func() *bytes.Buffer {
+	setupLogger := func(opts ...slogotel.OtelHandlerOpt) *bytes.Buffer {
 		var buffer bytes.Buffer
-		slog.SetDefault(slog.New(slogotel.OtelHandler{
-			Next: slog.NewJSONHandler(&buffer, nil),
-		}))
+		slog.SetDefault(slog.New(slogotel.New(slog.NewJSONHandler(&buffer, nil), opts...)))
 
 		return &buffer
 	}
@@ -277,6 +275,32 @@ func TestOtelHandler(t *testing.T) {
 
 		if spans[0].Status() != want {
 			t.Errorf("\ngot %v\nwant %v", spans[0].Status(), want)
+		}
+	})
+
+	t.Run("when configured with NoTraceEvents, does not attach events to active trace", func(t *testing.T) {
+		wantMsg := "a log without any trace events"
+		spanRecorder, tracer := setupTracer()
+		buffer := setupLogger(slogotel.WithNoTraceEvents(true))
+
+		func() {
+			ctx, span := tracer.Start(context.Background(), testOperationName)
+			defer span.End()
+			slog.InfoContext(ctx, wantMsg)
+		}()
+
+		spans := spanRecorder.Ended()
+		spans[0].Status()
+
+		if eventsLen := len(spans[0].Events()); eventsLen > 0 {
+			t.Errorf("Expected no events on the span, but there are %d: %v", eventsLen, spans[0].Events())
+		}
+		got := map[string]string{}
+		if err := json.Unmarshal([]byte(strings.TrimSuffix(buffer.String(), "\n")), &got); err != nil {
+			t.Fatal(err)
+		}
+		if msg := got["msg"]; msg != wantMsg {
+			t.Errorf("\ngot %v\nwant %v", msg, wantMsg)
 		}
 	})
 }
