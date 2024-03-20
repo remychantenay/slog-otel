@@ -38,17 +38,44 @@ type OtelHandler struct {
 	Next slog.Handler
 	// NoBaggage determines whether to add context baggage members to the log record.
 	NoBaggage bool
+	// NoTraceEvents determines whether to record an event for every log on the active trace.
+	NoTraceEvents bool
 }
+
+type OtelHandlerOpt func(handler *OtelHandler)
 
 // HandlerFn defines the handler used by slog.Handler as return value.
 type HandlerFn func(slog.Handler) slog.Handler
 
-// NewOtelHandler creates and returns a new OtelHandler to use with log/slog.
-func NewOtelHandler() HandlerFn {
+// WithNoBaggage returns an OtelHandlerOpt, which sets the NoBaggage flag
+func WithNoBaggage(noBaggage bool) OtelHandlerOpt {
+	return func(handler *OtelHandler) {
+		handler.NoBaggage = noBaggage
+	}
+}
+
+// WithNoTraceEvents returns an OtelHandlerOpt, which sets the NoTraceEvents flag
+func WithNoTraceEvents(noTraceEvents bool) OtelHandlerOpt {
+	return func(handler *OtelHandler) {
+		handler.NoTraceEvents = noTraceEvents
+	}
+}
+
+// New creates a new OtelHandler to use with log/slog
+func New(next slog.Handler, opts ...OtelHandlerOpt) *OtelHandler {
+	ret := &OtelHandler{
+		Next: next,
+	}
+	for _, opt := range opts {
+		opt(ret)
+	}
+	return ret
+}
+
+// NewOtelHandler creates and returns a new HandlerFn, which wraps a handler with OtelHandler to use with log/slog.
+func NewOtelHandler(opts ...OtelHandlerOpt) HandlerFn {
 	return func(next slog.Handler) slog.Handler {
-		return &OtelHandler{
-			Next: next,
-		}
+		return New(next, opts...)
 	}
 }
 
@@ -71,22 +98,23 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 		return h.Next.Handle(ctx, record)
 	}
 
-	// Adding log info to span event.
-	eventAttrs := make([]attribute.KeyValue, 0, record.NumAttrs())
-	eventAttrs = append(eventAttrs, attribute.String(slog.MessageKey, record.Message))
-	eventAttrs = append(eventAttrs, attribute.String(slog.LevelKey, record.Level.String()))
-	eventAttrs = append(eventAttrs, attribute.String(slog.TimeKey, record.Time.Format(time.RFC3339Nano)))
+	if !h.NoTraceEvents {
+		// Adding log info to span event.
+		eventAttrs := make([]attribute.KeyValue, 0, record.NumAttrs())
+		eventAttrs = append(eventAttrs, attribute.String(slog.MessageKey, record.Message))
+		eventAttrs = append(eventAttrs, attribute.String(slog.LevelKey, record.Level.String()))
+		eventAttrs = append(eventAttrs, attribute.String(slog.TimeKey, record.Time.Format(time.RFC3339Nano)))
+		record.Attrs(func(attr slog.Attr) bool {
+			otelAttr := h.slogAttrToOtelAttr(attr)
+			if otelAttr.Valid() {
+				eventAttrs = append(eventAttrs, otelAttr)
+			}
 
-	record.Attrs(func(attr slog.Attr) bool {
-		otelAttr := h.slogAttrToOtelAttr(attr)
-		if otelAttr.Valid() {
-			eventAttrs = append(eventAttrs, otelAttr)
-		}
+			return true
+		})
 
-		return true
-	})
-
-	span.AddEvent(SpanEventKey, trace.WithAttributes(eventAttrs...))
+		span.AddEvent(SpanEventKey, trace.WithAttributes(eventAttrs...))
+	}
 
 	// Adding span info to log record.
 	spanContext := span.SpanContext()
@@ -112,16 +140,18 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 // WithAttrs returns a new Otel whose attributes consists of handler's attributes followed by attrs.
 func (h OtelHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return OtelHandler{
-		Next: h.Next.WithAttrs(attrs),
-		NoBaggage: h.NoBaggage,
+		Next:          h.Next.WithAttrs(attrs),
+		NoBaggage:     h.NoBaggage,
+		NoTraceEvents: h.NoTraceEvents,
 	}
 }
 
 // WithGroup returns a new Otel with a group, provided the group's name.
 func (h OtelHandler) WithGroup(name string) slog.Handler {
 	return OtelHandler{
-		Next: h.Next.WithGroup(name),
-		NoBaggage: h.NoBaggage,
+		Next:          h.Next.WithGroup(name),
+		NoBaggage:     h.NoBaggage,
+		NoTraceEvents: h.NoTraceEvents,
 	}
 }
 
