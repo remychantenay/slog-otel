@@ -94,11 +94,11 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 	}
 
 	span := trace.SpanFromContext(ctx)
-	if span == nil || !span.IsRecording() {
+	if span == nil {
 		return h.Next.Handle(ctx, record)
 	}
 
-	if !h.NoTraceEvents {
+	if !h.NoTraceEvents && span.IsRecording() {
 		// Adding log info to span event.
 		eventAttrs := make([]attribute.KeyValue, 0, record.NumAttrs())
 		eventAttrs = append(eventAttrs, attribute.String(slog.MessageKey, record.Message))
