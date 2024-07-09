@@ -212,7 +212,7 @@ func (h OtelHandler) slogAttrToOtelAttr(attr slog.Attr, groupKeys ...string) att
 		case []bool:
 			return attribute.BoolSlice(key, v)
 		default:
-			return attribute.KeyValue{}
+			return attribute.String(key, fmt.Sprintf("%+v", v))
 		}
 	default:
 		return attribute.KeyValue{}

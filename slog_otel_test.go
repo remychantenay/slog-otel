@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"strings"
 	"testing"
@@ -127,6 +128,9 @@ func TestOtelHandler(t *testing.T) {
 		}, {
 			Key:   "group_2.key_2",
 			Value: attribute.StringValue("value_2"),
+		}, {
+			Key:   "err",
+			Value: attribute.StringValue("boom"),
 		}}
 
 		func() {
@@ -151,6 +155,7 @@ func TestOtelHandler(t *testing.T) {
 				"float64_slice", float64Slice,
 				"bool_slice", boolSlice,
 				"a_key", "a_value",
+				"err", errors.New("boom"),
 				group1,
 				group2,
 			)
