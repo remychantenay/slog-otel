@@ -132,9 +132,13 @@ func TestOtelHandler(t *testing.T) {
 			Key:   "err",
 			Value: attribute.StringValue("boom"),
 		}}
+		bagKey := "someBaggage"
 
 		func() {
-			ctx := context.Background()
+			m1, _ := baggage.NewMemberRaw(bagKey, "some value")
+			bag, _ := baggage.New(m1)
+			ctx := baggage.ContextWithBaggage(context.Background(), bag)
+			// ctx := context.Background()
 			ctx, span := tracer.Start(ctx, testOperationName)
 			defer span.End()
 
@@ -186,6 +190,12 @@ func TestOtelHandler(t *testing.T) {
 			if !found {
 				t.Errorf("\nspan event attribute with key %v and value %v is missing",
 					wantAttr.Key, wantAttr.Value)
+			}
+		}
+
+		for _, gotAttr := range spans[0].Events()[0].Attributes {
+			if string(gotAttr.Key) == bagKey {
+				t.Errorf("Unexpected baggage in event attributes")
 			}
 		}
 	})

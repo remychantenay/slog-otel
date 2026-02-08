@@ -85,14 +85,6 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 		return h.Next.Handle(ctx, record)
 	}
 
-	if !h.NoBaggage {
-		// Adding context baggage members to log record.
-		b := baggage.FromContext(ctx)
-		for _, m := range b.Members() {
-			record.AddAttrs(slog.String(m.Key(), m.Value()))
-		}
-	}
-
 	span := trace.SpanFromContext(ctx)
 	if span == nil || !span.IsRecording() {
 		return h.Next.Handle(ctx, record)
@@ -114,6 +106,14 @@ func (h OtelHandler) Handle(ctx context.Context, record slog.Record) error {
 		})
 
 		span.AddEvent(SpanEventKey, trace.WithAttributes(eventAttrs...))
+	}
+
+	if !h.NoBaggage {
+		// Adding context baggage members to log record.
+		b := baggage.FromContext(ctx)
+		for _, m := range b.Members() {
+			record.AddAttrs(slog.String(m.Key(), m.Value()))
+		}
 	}
 
 	// Adding span info to log record.
